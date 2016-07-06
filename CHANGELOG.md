@@ -1,5 +1,9 @@
 # Change log
 
+### vNEXT
+
+- Added support for `apollo-client` breaking change that moves methods to query's observable ([PR #40](https://github.com/apollostack/angular2-apollo/pull/40))
+
 ### v0.3.0
 
 - Added SSR support

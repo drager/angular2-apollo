@@ -23,6 +23,7 @@ interface ApolloHandleOptions extends ApolloOptions {
 class ApolloHandle {
   private lastQueryVariables: Object = {};
   private queryHandles: Object = {};
+  private querySubscriptions: Object = {};
 
   private component;
   private client;
@@ -65,7 +66,7 @@ class ApolloHandle {
   }
 
   public unsubscribe(queryName?: string): void {
-    const allQueries = this.getAllQueries();
+    const allQueries = this.getAllQueriesSubs();
 
     if (allQueries) {
       if (queryName) {
@@ -93,8 +94,16 @@ class ApolloHandle {
     return this.queryHandles[name];
   }
 
-  private getAllQueries() {
-    return this.queryHandles;
+  private setQuerySub(name, sub): void {
+    this.querySubscriptions[name] = sub;
+  }
+
+  private getQuerySub(name) {
+    return this.querySubscriptions[name];
+  }
+
+  private getAllQueriesSubs() {
+    return this.querySubscriptions;
   }
 
   /**
@@ -160,7 +169,7 @@ class ApolloHandle {
       assign(this.component[queryName], {
         errors,
         loading: false,
-        unsubscribe: () => this.getQuery(queryName).unsubscribe(),
+        unsubscribe: () => this.getQuerySub(queryName).unsubscribe(),
         refetch: (...args) => this.getQuery(queryName).refetch(...args),
         stopPolling: () => this.getQuery(queryName).stopPolling(),
         startPolling: (...args) => this.getQuery(queryName).startPolling(...args),
@@ -170,7 +179,9 @@ class ApolloHandle {
     // we don't want to have multiple subscriptions
     this.unsubscribe(queryName);
 
-    this.setQuery(queryName, obs.subscribe({
+    this.setQuery(queryName, obs);
+
+    this.setQuerySub(queryName, obs.subscribe({
       next: setQuery,
       error(errors) {
         setQuery({ errors });
